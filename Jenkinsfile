@@ -141,9 +141,17 @@ pipeline {
                     // Get function URL for verification
                     bat '''
                         echo "Getting function URL..."
-                        for /f "tokens=*" %%i in ('az functionapp function show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --function-name HelloWorld --query "invokeUrlTemplate" --output tsv') do set FUNCTION_URL=%%i
-                        echo "Function URL: %FUNCTION_URL%"
-                        echo "You can test the function at: %FUNCTION_URL%"
+                        echo "Checking if function exists after deployment..."
+                        az functionapp function show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --function-name HelloWorld --query "name" --output tsv
+                        if %ERRORLEVEL% EQU 0 (
+                            echo "Function exists, getting URL..."
+                            for /f "tokens=*" %%i in ('az functionapp function show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --function-name HelloWorld --query "invokeUrlTemplate" --output tsv') do set FUNCTION_URL=%%i
+                            echo "Function URL: %FUNCTION_URL%"
+                            echo "You can test the function at: %FUNCTION_URL%"
+                        ) else (
+                            echo "Function HelloWorld not found after deployment. Checking available functions..."
+                            az functionapp function list --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --query "[].name" --output table
+                        )
                     '''
                 }
                 failure {
@@ -157,19 +165,26 @@ pipeline {
                 script {
                     echo 'Verifying deployment...'
                     
-                    // Wait a moment for deployment to complete
-                    bat 'timeout /t 30 /nobreak'
+                    // Wait a moment for deployment to complete using PowerShell
+                    powershell 'Start-Sleep -Seconds 30'
                     
                     // Test the deployed function
                     bat '''
                         echo "Testing deployed function..."
-                        for /f "tokens=*" %%i in ('az functionapp function show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --function-name HelloWorld --query "invokeUrlTemplate" --output tsv') do set FUNCTION_URL=%%i
-                        
-                        if not "%%FUNCTION_URL%%"=="" (
-                            echo "Testing function at: %%FUNCTION_URL%%"
-                            curl -f "%%FUNCTION_URL%%" || echo "Function test failed"
+                        echo "Checking if function exists..."
+                        az functionapp function show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --function-name HelloWorld --query "name" --output tsv
+                        if %ERRORLEVEL% EQU 0 (
+                            echo "Function exists, getting URL..."
+                            for /f "tokens=*" %%i in ('az functionapp function show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --function-name HelloWorld --query "invokeUrlTemplate" --output tsv') do set FUNCTION_URL=%%i
+                            if not "%%FUNCTION_URL%%"=="" (
+                                echo "Testing function at: %%FUNCTION_URL%%"
+                                curl -f "%%FUNCTION_URL%%" || echo "Function test failed"
+                            ) else (
+                                echo "Could not retrieve function URL"
+                            )
                         ) else (
-                            echo "Could not retrieve function URL"
+                            echo "Function HelloWorld not found. Checking available functions..."
+                            az functionapp function list --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --query "[].name" --output table
                         )
                     '''
                 }
