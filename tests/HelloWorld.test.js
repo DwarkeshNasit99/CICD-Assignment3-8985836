@@ -61,6 +61,7 @@ describe('HelloWorld Azure Function Tests', () => {
     });
 
     // Test Case 4: Edge case - empty name parameter
+    // Fixed: Should return "Hello, World!" for empty name
     test('should handle empty name parameter gracefully', async () => {
         const req = {
             query: { name: '' },
