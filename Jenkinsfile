@@ -120,31 +120,23 @@ pipeline {
                     echo 'Deploying to Azure Functions...'
                     
                     // Login to Azure using Service Principal
-                    bat '''
-                        echo "Logging into Azure..."
-                        az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%
-                        
-                        echo "Setting subscription..."
-                        az account set --subscription %AZURE_SUBSCRIPTION_ID%
-                        
-                        echo "Checking if function.zip exists..."
-                        if exist function.zip (
-                            echo "function.zip found, size:"
-                            dir function.zip
-                        ) else (
-                            echo "ERROR: function.zip not found!"
-                            exit /b 1
-                        )
-                        
-                        echo "Deploying function app..."
-                        az functionapp deployment source config-zip --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --src function.zip
-                        if %ERRORLEVEL% NEQ 0 (
-                            echo "ERROR: Deployment failed!"
-                            exit /b 1
-                        )
-                        
-                        echo "Deployment completed successfully!"
-                    '''
+                    bat 'echo "Logging into Azure..."'
+                    bat 'az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%'
+                    
+                    // Set subscription
+                    bat 'echo "Setting subscription..."'
+                    bat 'az account set --subscription %AZURE_SUBSCRIPTION_ID%'
+                    
+                    // Check if function.zip exists
+                    bat 'echo "Checking if function.zip exists..."'
+                    bat 'if exist function.zip (echo "function.zip found, size:" && dir function.zip) else (echo "ERROR: function.zip not found!" && exit /b 1)'
+                    
+                    // Deploy the function app
+                    bat 'echo "Deploying function app..."'
+                    bat 'az functionapp deployment source config-zip --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --src function.zip'
+                    bat 'if %ERRORLEVEL% NEQ 0 (echo "ERROR: Deployment failed!" && exit /b 1)'
+                    
+                    bat 'echo "Deployment completed successfully!"'
                 }
             }
             post {
