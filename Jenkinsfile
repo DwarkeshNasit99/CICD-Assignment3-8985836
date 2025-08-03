@@ -27,26 +27,27 @@ pipeline {
                     echo 'Building the Azure Function application...'
                     
                     // Install Node.js dependencies
-                    sh 'npm install'
+                    bat 'npm install'
                     
                     // Create deployment package
-                    sh '''
+                    bat '''
                         echo "Creating deployment package..."
-                        if [ -d "deployment" ]; then
-                            rm -rf deployment
-                        fi
-                        mkdir -p deployment
-                        cp -r HelloWorld deployment/
-                        cp host.json deployment/
-                        cp package.json deployment/
-                        cp local.settings.json deployment/
-                        
-                        # Create zip file for deployment
-                        cd deployment
-                        zip -r ../function.zip .
-                        cd ..
+                        if exist deployment rmdir /s /q deployment
+                        mkdir deployment
+                        xcopy HelloWorld deployment\\HelloWorld /e /i
+                        copy host.json deployment\\
+                        copy package.json deployment\\
+                        copy local.settings.json deployment\\
                         
                         echo "Build completed successfully!"
+                    '''
+                    
+                    // Create zip file for deployment using PowerShell
+                    powershell '''
+                        Write-Host "Creating zip file for deployment..."
+                        if (Test-Path "function.zip") { Remove-Item "function.zip" }
+                        Compress-Archive -Path "deployment\\*" -DestinationPath "function.zip" -Force
+                        Write-Host "Zip file created successfully!"
                     '''
                 }
             }
@@ -66,16 +67,16 @@ pipeline {
                     echo 'Running automated tests...'
                     
                     // Run Jest tests
-                    sh 'npm test'
+                    bat 'npm test'
                     
                     // Additional test verification
-                    sh '''
+                    bat '''
                         echo "Verifying test results..."
-                        if [ -f "coverage/lcov-report/index.html" ]; then
+                        if exist "coverage\\lcov-report\\index.html" (
                             echo "Test coverage report generated successfully"
-                        else
+                        ) else (
                             echo "Warning: Test coverage report not found"
-                        fi
+                        )
                     '''
                 }
             }
@@ -104,21 +105,15 @@ pipeline {
                     echo 'Deploying to Azure Functions...'
                     
                     // Login to Azure using Service Principal
-                    sh '''
+                    bat '''
                         echo "Logging into Azure..."
-                        az login --service-principal \
-                            -u $AZURE_CLIENT_ID \
-                            -p $AZURE_CLIENT_SECRET \
-                            --tenant $AZURE_TENANT_ID
+                        az login --service-principal -u %AZURE_CLIENT_ID% -p %AZURE_CLIENT_SECRET% --tenant %AZURE_TENANT_ID%
                         
                         echo "Setting subscription..."
-                        az account set --subscription $AZURE_SUBSCRIPTION_ID
+                        az account set --subscription %AZURE_SUBSCRIPTION_ID%
                         
                         echo "Deploying function app..."
-                        az functionapp deployment source config-zip \
-                            --resource-group $RESOURCE_GROUP \
-                            --name $FUNCTION_APP_NAME \
-                            --src function.zip
+                        az functionapp deployment source config-zip --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --src function.zip
                         
                         echo "Deployment completed successfully!"
                     '''
@@ -129,17 +124,11 @@ pipeline {
                     echo 'Deployment completed successfully!'
                     
                     // Get function URL for verification
-                    sh '''
+                    bat '''
                         echo "Getting function URL..."
-                        FUNCTION_URL=$(az functionapp function show \
-                            --resource-group $RESOURCE_GROUP \
-                            --name $FUNCTION_APP_NAME \
-                            --function-name HelloWorld \
-                            --query "invokeUrlTemplate" \
-                            --output tsv)
-                        
-                        echo "Function URL: $FUNCTION_URL"
-                        echo "You can test the function at: $FUNCTION_URL"
+                        for /f "tokens=*" %%i in ('az functionapp function show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --function-name HelloWorld --query "invokeUrlTemplate" --output tsv') do set FUNCTION_URL=%%i
+                        echo "Function URL: %FUNCTION_URL%"
+                        echo "You can test the function at: %FUNCTION_URL%"
                     '''
                 }
                 failure {
@@ -154,24 +143,19 @@ pipeline {
                     echo 'Verifying deployment...'
                     
                     // Wait a moment for deployment to complete
-                    sh 'sleep 30'
+                    bat 'timeout /t 30 /nobreak'
                     
                     // Test the deployed function
-                    sh '''
+                    bat '''
                         echo "Testing deployed function..."
-                        FUNCTION_URL=$(az functionapp function show \
-                            --resource-group $RESOURCE_GROUP \
-                            --name $FUNCTION_APP_NAME \
-                            --function-name HelloWorld \
-                            --query "invokeUrlTemplate" \
-                            --output tsv)
+                        for /f "tokens=*" %%i in ('az functionapp function show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --function-name HelloWorld --query "invokeUrlTemplate" --output tsv') do set FUNCTION_URL=%%i
                         
-                        if [ ! -z "$FUNCTION_URL" ]; then
-                            echo "Testing function at: $FUNCTION_URL"
-                            curl -f "$FUNCTION_URL" || echo "Function test failed"
-                        else
+                        if not "%%FUNCTION_URL%%"=="" (
+                            echo "Testing function at: %%FUNCTION_URL%%"
+                            curl -f "%%FUNCTION_URL%%" || echo "Function test failed"
+                        ) else (
                             echo "Could not retrieve function URL"
-                        fi
+                        )
                     '''
                 }
             }
@@ -191,10 +175,10 @@ pipeline {
             echo 'Pipeline execution completed!'
             
             // Clean up
-            sh '''
+            bat '''
                 echo "Cleaning up build artifacts..."
-                rm -f function.zip
-                rm -rf deployment
+                if exist function.zip del function.zip
+                if exist deployment rmdir /s /q deployment
             '''
         }
         success {
