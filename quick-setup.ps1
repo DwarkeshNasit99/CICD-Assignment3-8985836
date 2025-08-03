@@ -57,7 +57,7 @@ az storage account create --name $storageAccount --location $location --resource
 
 # Create function app
 Write-Host "Creating function app: $functionAppName" -ForegroundColor Cyan
-az functionapp create --resource-group $resourceGroup --consumption-plan-location $location --runtime node --runtime-version 18 --functions-version 4 --name $functionAppName --storage-account $storageAccount --os-type Linux
+az functionapp create --resource-group $resourceGroup --consumption-plan-location $location --runtime node --runtime-version 20 --functions-version 4 --name $functionAppName --storage-account $storageAccount --os-type Linux
 
 # Get subscription ID
 $subscriptionId = az account show --query id --output tsv

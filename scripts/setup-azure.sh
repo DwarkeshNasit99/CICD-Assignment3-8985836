@@ -49,7 +49,7 @@ az functionapp create \
     --resource-group $RESOURCE_GROUP \
     --consumption-plan-location $LOCATION \
     --runtime node \
-    --runtime-version 18 \
+    --runtime-version 20 \
     --functions-version 4 \
     --name $FUNCTION_APP_NAME \
     --storage-account $STORAGE_ACCOUNT \

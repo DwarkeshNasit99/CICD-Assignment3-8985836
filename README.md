@@ -53,7 +53,7 @@ This project demonstrates a complete CI/CD pipeline using Jenkins to deploy a "H
    ```bash
    az group create --name your-resource-group --location eastus
    az storage account create --name yourstorageaccount --location eastus --resource-group your-resource-group --sku Standard_LRS
-   az functionapp create --resource-group your-resource-group --consumption-plan-location eastus --runtime node --runtime-version 18 --functions-version 4 --name your-function-app-name --storage-account yourstorageaccount
+   az functionapp create --resource-group your-resource-group --consumption-plan-location eastus --runtime node --runtime-version 20 --functions-version 4 --name your-function-app-name --storage-account yourstorageaccount
    ```
 
 2. **Note down the following values:**
