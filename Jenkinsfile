@@ -37,7 +37,22 @@ pipeline {
                         xcopy HelloWorld deployment\\HelloWorld /e /i
                         copy host.json deployment\\
                         copy package.json deployment\\
-                        copy local.settings.json deployment\\
+                        
+                        echo "Creating local.settings.json for deployment..."
+                        if exist local.settings.json (
+                            copy local.settings.json deployment\\
+                        ) else if exist local.settings.template.json (
+                            copy local.settings.template.json deployment\\local.settings.json
+                        ) else (
+                            echo "Creating default local.settings.json..."
+                            echo { > deployment\\local.settings.json
+                            echo   "IsEncrypted": false, >> deployment\\local.settings.json
+                            echo   "Values": { >> deployment\\local.settings.json
+                            echo     "AzureWebJobsStorage": "UseDevelopmentStorage=true", >> deployment\\local.settings.json
+                            echo     "FUNCTIONS_WORKER_RUNTIME": "node" >> deployment\\local.settings.json
+                            echo   } >> deployment\\local.settings.json
+                            echo } >> deployment\\local.settings.json
+                        )
                         
                         echo "Build completed successfully!"
                     '''
