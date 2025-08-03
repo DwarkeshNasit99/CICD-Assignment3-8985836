@@ -127,8 +127,21 @@ pipeline {
                         echo "Setting subscription..."
                         az account set --subscription %AZURE_SUBSCRIPTION_ID%
                         
+                        echo "Checking if function.zip exists..."
+                        if exist function.zip (
+                            echo "function.zip found, size:"
+                            dir function.zip
+                        ) else (
+                            echo "ERROR: function.zip not found!"
+                            exit /b 1
+                        )
+                        
                         echo "Deploying function app..."
                         az functionapp deployment source config-zip --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --src function.zip
+                        if %ERRORLEVEL% NEQ 0 (
+                            echo "ERROR: Deployment failed!"
+                            exit /b 1
+                        )
                         
                         echo "Deployment completed successfully!"
                     '''
