@@ -70,7 +70,7 @@ describe('HelloWorld Azure Function Tests', () => {
         await helloWorldFunction(mockContext, req);
 
         expect(mockContext.res.status).toBe(200);
-        expect(mockContext.res.body).toBe('Hello, . This HTTP triggered function executed successfully.');
+        expect(mockContext.res.body).toBe('Hello, World! This HTTP triggered function executed successfully.');
     });
 
     // Test Case 5: Verify logging functionality
