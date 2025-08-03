@@ -38,6 +38,9 @@ pipeline {
                         copy host.json deployment\\
                         copy package.json deployment\\
                         
+                        echo "Including node_modules in deployment..."
+                        xcopy node_modules deployment\\node_modules /e /i /q
+                        
                         echo "Creating local.settings.json for deployment..."
                         if exist local.settings.json (
                             copy local.settings.json deployment\\
@@ -141,6 +144,10 @@ pipeline {
                     bat 'echo "Deploying function app..."'
                     bat 'az functionapp deployment source config-zip --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --src function.zip'
                     bat 'if %ERRORLEVEL% NEQ 0 (echo "ERROR: Deployment failed!" && exit /b 1)'
+                    
+                    // Wait for deployment to process
+                    bat 'echo "Waiting for deployment to process..."'
+                    powershell 'Start-Sleep -Seconds 60'
                     
                     // Debug: Check Function App status
                     bat 'echo "DEBUG: Checking Function App status..."'
