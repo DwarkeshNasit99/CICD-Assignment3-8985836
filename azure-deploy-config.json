@@ -1,0 +1,34 @@
+{
+  "azure": {
+    "functionAppName": "cicd-fn-helloworld-canadacentral",
+    "resourceGroup": "cicd_asgmt3rg",
+    "subscriptionId": "f636f191-a799-4988-a4aa-1e290b188dd1",
+    "location": "canadacentral",
+    "runtime": "node",
+    "runtimeVersion": "22",
+    "functionsVersion": "4"
+  },
+  "jenkins": {
+    "pipelineName": "azure-function-pipeline",
+    "githubRepo": "DwarkeshNasit99/CICD-Assignment3-8985836",
+    "branch": "main"
+  },
+  "function": {
+    "name": "HelloWorld",
+    "trigger": "httpTrigger",
+    "authLevel": "anonymous",
+    "methods": ["GET", "POST"]
+  },
+  "testing": {
+    "framework": "jest",
+    "coverage": true,
+    "testCases": [
+      "Basic HTTP response with Hello World",
+      "Personalized message with name parameter",
+      "Response with name in request body",
+      "Edge case handling (empty name)",
+      "Logging functionality verification",
+      "Project configuration validation"
+    ]
+  }
+} 

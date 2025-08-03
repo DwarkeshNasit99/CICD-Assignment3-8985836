@@ -1,0 +1,25 @@
+{
+  "name": "azure-function-hello-world",
+  "version": "1.0.0",
+  "description": "A simple Hello World Azure Function with CI/CD pipeline",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "start": "func start",
+    "build": "echo 'Build completed'"
+  },
+  "dependencies": {
+    "@azure/functions": "^3.5.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
+  },
+  "keywords": [
+    "azure-functions",
+    "jenkins",
+    "ci-cd"
+  ],
+  "author": "Student",
+  "license": "MIT"
+} 
