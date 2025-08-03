@@ -131,10 +131,24 @@ pipeline {
                     bat 'echo "Checking if function.zip exists..."'
                     bat 'if exist function.zip (echo "function.zip found, size:" && dir function.zip) else (echo "ERROR: function.zip not found!" && exit /b 1)'
                     
+                    // Debug: Check what's in the zip file
+                    bat 'echo "DEBUG: Checking zip contents..."'
+                    bat 'powershell "Expand-Archive -Path function.zip -DestinationPath temp-extract -Force"'
+                    bat 'echo "DEBUG: Contents of deployment package:"'
+                    bat 'dir temp-extract /s'
+                    
                     // Deploy the function app
                     bat 'echo "Deploying function app..."'
                     bat 'az functionapp deployment source config-zip --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --src function.zip'
                     bat 'if %ERRORLEVEL% NEQ 0 (echo "ERROR: Deployment failed!" && exit /b 1)'
+                    
+                    // Debug: Check Function App status
+                    bat 'echo "DEBUG: Checking Function App status..."'
+                    bat 'az functionapp show --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --query "{name:name, state:state, kind:kind, runtime:siteConfig.linuxFxVersion}" --output table'
+                    
+                    // Debug: List all functions in the app
+                    bat 'echo "DEBUG: Listing all functions in the app..."'
+                    bat 'az functionapp function list --resource-group %RESOURCE_GROUP% --name %FUNCTION_APP_NAME% --query "[].{name:name, type:type}" --output table'
                     
                     bat 'echo "Deployment completed successfully!"'
                 }
