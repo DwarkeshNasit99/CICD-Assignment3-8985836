@@ -56,7 +56,6 @@ pipeline {
                 }
                 failure {
                     echo 'Build stage failed!'
-                    currentBuild.result = 'FAILURE'
                 }
             }
         }
@@ -95,7 +94,6 @@ pipeline {
                 }
                 failure {
                     echo 'Tests failed!'
-                    currentBuild.result = 'FAILURE'
                 }
             }
         }
@@ -146,7 +144,6 @@ pipeline {
                 }
                 failure {
                     echo 'Deployment failed!'
-                    currentBuild.result = 'FAILURE'
                 }
             }
         }
@@ -184,7 +181,6 @@ pipeline {
                 }
                 failure {
                     echo 'Verification failed!'
-                    currentBuild.result = 'UNSTABLE'
                 }
             }
         }
